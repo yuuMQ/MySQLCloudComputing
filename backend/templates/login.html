@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; background: #f4f4f4; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input[type=text], input[type=password] { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .alert-success { background: #d4edda; color: #155724; padding: 12px; border-radius: 5px; margin: 15px 0; }
+        .alert-danger { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 5px; margin: 15px 0; }
+        a { color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Đăng nhập hệ thống</h2>
+
+    <!-- Thông báo thành công (từ đăng ký) -->
+    {% if notify %}
+        <div class="alert-success">{{ notify }}</div>
+    {% endif %}
+
+    <!-- Thông báo lỗi (sai pass, không kết nối DB, v.v.) -->
+    {% if error %}
+        <div class="alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+        <label>Username:</label><br>
+        <input type="text" name="username" required autofocus><br><br>
+
+        <label>Password:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <button type="submit">Đăng nhập</button>
+    </form>
+
+    <hr>
+    <p>Chưa có tài khoản? <a href="/register">Đăng ký ngay</a></p>
+</div>
+</body>
+</html>
