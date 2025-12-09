@@ -5,6 +5,7 @@
 import mysql.connector
 from config import *
 
+# ĐĂNG NHẬP VÀO TÀI KHOẢN ADMIN
 def admin_conn():
     return mysql.connector.connect(
         host=MYSQL_HOST,
@@ -12,6 +13,7 @@ def admin_conn():
         password=MYSQL_ADMIN_PASS
     )
 
+# TẠO LOGIN CHO USER
 def create_mysql_user(username, password):
     db = admin_conn()
     cursor = db.cursor()
@@ -23,20 +25,20 @@ def create_mysql_user(username, password):
     cursor.close()
     db.close()
 
-def create_user_db(username):
-    db_name = f"db_{username}"
+# TẠO DATABASE CHO USER
+def create_user_db(username, db_name):
+    db_name = f"db_{db_name}"
 
     db = admin_conn()
     cursor = db.cursor()
 
     cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{db_name}`")
+    cursor.execute(f"CREATE TABLE `{db_name}`.`_init` (id INT PRIMARY KEY AUTO_INCREMENT)")
 
     cursor.execute(f"""
         GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER
         ON {db_name}.* TO '{username}'@'%';
     """)
-
-
     cursor.execute('FLUSH PRIVILEGES')
 
     db.commit()
@@ -44,3 +46,4 @@ def create_user_db(username):
     db.close()
 
     return db_name
+

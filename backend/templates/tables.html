@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tables - {{ dbname }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark px-3">
+    <a class="navbar-brand" href="/databases">⬅ Trở lại</a>
+    <span class="navbar-text">{{ dbname }}</span>
+</nav>
+
+<div class="container mt-4">
+
+    <h3>Danh sách bảng trong database <b>{{ dbname }}</b></h3>
+
+    <form method="POST" action="/database/{{ dbname }}/create_table" class="row g-2 mt-3">
+        <div class="col-auto">
+            <input name="table_name" class="form-control" placeholder="Tên bảng">
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary">Tạo bảng</button>
+        </div>
+    </form>
+
+    <hr>
+
+    {% if tables %}
+        <ul class="list-group mt-3">
+            {% for t in tables %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="/database/{{ dbname }}/{{ t }}">{{ t }}</a>
+
+                <a href="/database/{{ dbname }}/drop_table/{{ t }}" class="btn btn-sm btn-danger"
+                   onclick="return confirm('Xóa bảng này?')">Xóa</a>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted mt-3">Chưa có bảng nào.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
