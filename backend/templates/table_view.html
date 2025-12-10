@@ -21,19 +21,52 @@
         </div>
 
         <div class="col-auto">
-            <select name="dtype" class="form-select">
-                <option value="varchar">VARCHAR</option>
-                <option value="int">INT</option>
-                <option value="float">FLOAT</option>
-                <option value="datetime">DATETIME</option>
-            </select>
-        </div>
-
-        <div class="col-auto">
             <button class="btn btn-primary">Thêm</button>
         </div>
     </form>
 
+    <hr>
+
+    <h4>Xóa cột</h4>
+    <form method="POST" action="/database/{{ dbname }}/{{ table }}/drop_column" class="row g-2 mb-4">
+        <div class="col-auto">
+            <select name="column" class="form-select">
+                {% for col in columns %}
+                    {% if col[0] != 'id' %}
+                        <option value="{{ col[0] }}">{{ col[0] }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <button class="btn btn-danger">Xóa</button>
+        </div>
+    </form>
+    <hr>
+
+    <h4>Đổi tên cột</h4>
+    {% for col in columns %}
+        {% if col[0] != 'id' %}
+        <form class="row g-2 mb-2" action="/database/{{ dbname }}/{{ table }}/rename_column" method="POST">
+
+            <div class="col-auto">
+                <input type="text" class="form-control" value="{{ col[0] }}" disabled>
+            </div>
+
+            <input type="hidden" name="old_column" value="{{ col[0] }}">
+
+            <div class="col-auto">
+                <input type="text" name="new_column" class="form-control" placeholder="Tên mới" required>
+            </div>
+
+            <div class="col-auto">
+                <button class="btn btn-warning">Đổi tên</button>
+            </div>
+
+        </form>
+        {% endif %}
+    {% endfor %}
     <hr>
 
     <h4>Thêm dòng mới</h4>
@@ -75,49 +108,53 @@
 
                     <td>
                         <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                            data-bs-target="#editModal{{ row[0] }}">Sửa</button>
+                                data-bs-target="#editModal{{ row[0] }}">Sửa</button>
 
                         <a class="btn btn-sm btn-danger"
                            href="/database/{{ dbname }}/{{ table }}/delete_row/{{ row[0] }}"
                            onclick="return confirm('Xóa dòng này?')">Xóa</a>
                     </td>
                 </tr>
-
-                <!-- MODAL EDIT -->
-                <div class="modal fade" id="editModal{{ row[0] }}" tabindex="-1">
-                    <div class="modal-dialog">
-                        <form method="POST" action="/database/{{ dbname }}/{{ table }}/edit_row/{{ row[0] }}"
-                              class="modal-content">
-
-                            <div class="modal-header">
-                                <h5 class="modal-title">Sửa dòng ID {{ row[0] }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-
-                            <div class="modal-body">
-                                {% for i, col in enumerate(columns) %}
-                                    {% if col[0] != 'id' %}
-                                        <label>{{ col[0] }}</label>
-                                        <input name="{{ col[0] }}" class="form-control mb-2"
-                                               value="{{ row[i] }}">
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-
-                            <div class="modal-footer">
-                                <button class="btn btn-success">Lưu</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                            </div>
-
-                        </form>
-                    </div>
-                </div>
-
             {% endfor %}
         </tbody>
     </table>
 
 </div>
+
+<!-- ======================================= -->
+<!--  MODALS — moved OUTSIDE the table FIXED -->
+<!-- ======================================= -->
+
+{% for row in rows %}
+<div class="modal fade" id="editModal{{ row[0] }}" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" action="/database/{{ dbname }}/{{ table }}/edit_row/{{ row[0] }}"
+              class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Sửa dòng ID {{ row[0] }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                {% for col in columns %}
+                    {% if col[0] != 'id' %}
+                        <label>{{ col[0] }}</label>
+                        <input name="{{ col[0] }}" class="form-control mb-2"
+                               value="{{ row[loop.index0] }}">
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-success">Lưu</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endfor %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 

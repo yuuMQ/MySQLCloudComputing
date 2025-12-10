@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, session, url_for
 import mysql.connector
 from db_admin import create_user_db, create_mysql_user, admin_conn
 from config import *
-from werkzeug.security import generate_password_hash, check_password_hash
 import re
 
 app = Flask(__name__)
@@ -57,7 +56,6 @@ def register():
         # LẤY username và password. Băm (mã hóa) password
         username = request.form['username']
         password = request.form['password']
-        password_hash = generate_password_hash(password)
 
         # CHỈ CHO PHÉP TÀI KHOẢN KHÔNG CHỨA KÝ TỰ ĐẶC BIỆT HAY KHOẢNG TRẮNG
         if not re.match(r"^[a-zA-Z0-9_-]+$", username):
@@ -81,7 +79,7 @@ def register():
             # 2. INSERT username VÀO BẢNG users TRONG user_db do admin quản lý
             cursor.execute(
                 "INSERT INTO users (username, password) VALUES (%s, %s)",
-                (username, password_hash)
+                (username, password)
             )
             conn.commit()
             cursor.close()
@@ -118,7 +116,7 @@ def login():
             conn.close()
 
             # THÔNG TIN SAI -> BÁO LỖI
-            if not result or not check_password_hash(result[0], password):
+            if not result or result[0] != password:
                 return render_template('login.html', error='Wrong username or password')
 
             # 2. ĐĂNG NHẬP VÀO mysql
@@ -189,9 +187,6 @@ def add_column(dbname, table):
 
     type_map = {
         "varchar": "VARCHAR(255)",
-        "int": "INT",
-        "float": "FLOAT",
-        "datetime": "DATETIME"
     }
 
     conn = user_conn(session['username'], session['user_pass'])
@@ -213,6 +208,37 @@ def drop_column(dbname, table):
     conn = user_conn(session['username'], session['user_pass'])
     cursor = conn.cursor()
     cursor.execute(f'ALTER TABLE `{dbname}`.`{table}` DROP COLUMN `{col}`;')
+    conn.commit()
+    conn.close()
+
+    return redirect(f'/database/{dbname}/{table}')
+
+# RENAME COLUMN
+@app.route('/database/<dbname>/<table>/rename_column', methods=['POST'])
+def rename_column(dbname, table):
+    old_col = request.form['old_column']
+    new_col = request.form['new_column']
+
+    if old_col == 'id':
+        return 'KHÔNG ĐƯỢC ĐỔI TÊN CỘT id'
+
+    if not re.match(r"^[a-zA-Z0-9_]+$", new_col):
+        return "Tên cột mới không hợp lệ!"
+
+    conn = user_conn(session['username'], session['user_pass'])
+    cursor = conn.cursor()
+
+    cursor.execute(f"SHOW COLUMNS FROM `{dbname}`.`{table}` LIKE %s;", (old_col,))
+    col_info = cursor.fetchone()
+
+    if not col_info:
+        return "Cột không tồn tại!"
+
+    sql = f"""
+      ALTER TABLE `{dbname}`.`{table}`
+      CHANGE `{old_col}` `{new_col}` VARCHAR(255);
+      """
+    cursor.execute(sql)
     conn.commit()
     conn.close()
 
@@ -317,29 +343,6 @@ def drop_database(dbname):
 
     except Exception as e:
         return f"Lỗi khi xóa database: {e}"
-
-# XEM DATABASE
-@app.route('/databases')
-def list_databases():
-    if 'username' not in session:
-        return redirect("/login")
-
-    username = session['username']
-    user_pass = session['user_pass']
-
-    mysql_conn = user_conn(username, user_pass)
-    cur = mysql_conn.cursor()
-    cur.execute("SHOW DATABASES")
-
-    dbs = [
-        row[0] for row in cur.fetchall()
-        if row[0] not in ("information_schema", "mysql", "sys", "performance_schema")
-    ]
-
-    mysql_conn.close()
-    return render_template("databases.html", database=dbs, username=username)
-
-# SHOW TABLES
 
 # TAO TABLE
 @app.route('/database/<dbname>/create_table', methods=['POST'])

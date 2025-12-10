@@ -27,14 +27,10 @@ def create_mysql_user(username, password):
 
 # TẠO DATABASE CHO USER
 def create_user_db(username, db_name):
-    db_name = f"db_{db_name}"
-
     db = admin_conn()
     cursor = db.cursor()
 
     cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{db_name}`")
-    cursor.execute(f"CREATE TABLE `{db_name}`.`_init` (id INT PRIMARY KEY AUTO_INCREMENT)")
-
     cursor.execute(f"""
         GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER
         ON {db_name}.* TO '{username}'@'%';
