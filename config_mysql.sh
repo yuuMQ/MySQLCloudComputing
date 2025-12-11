@@ -3,9 +3,6 @@
 sudo apt update
 sudo apt install mysql-server -y
 
-sudo sed -i 's/^.*bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf
-sudo systemctl restart mysql
-
 sudo mysql <<EOF
 -- create admin account
 CREATE USER IF NOT EXISTS 'admin'@'%' IDENTIFIED BY 'admin123';

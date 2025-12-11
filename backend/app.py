@@ -179,8 +179,8 @@ def view_table(dbname, table):
 # ADD COLUMN
 @app.route('/database/<dbname>/<table>/add_column', methods=['POST'])
 def add_column(dbname, table):
-    col = request.form['column']
-    dtype = request.form['dtype']
+    col = request.form.get('column')
+    dtype = request.form.get('dtype', 'varchar')
 
     if col.lower() == 'id':
         return 'CANNOT FORMAT id COLUMN'
@@ -319,7 +319,7 @@ def create_database():
 
     try:
         create_user_db(username, db_name)
-        return redirect('/databases')
+        return redirect('/')
 
     except Exception as e:
         return f"Lỗi khi tạo database: {e}"
@@ -339,7 +339,7 @@ def drop_database(dbname):
 
         conn.commit()
         conn.close()
-        return redirect("/databases")
+        return redirect("/")
 
     except Exception as e:
         return f"Lỗi khi xóa database: {e}"
@@ -359,8 +359,7 @@ def create_table(dbname):
 
     sql = f"""
     CREATE TABLE `{dbname}`.`{table}` (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        defalut_col VARCHAR(20)
+        id INT AUTO_INCREMENT PRIMARY KEY
     );
     """
 
