@@ -7,6 +7,7 @@
 </head>
 <body>
 
+
 <nav class="navbar navbar-dark bg-dark px-3">
     <div>
         <a class="btn text-white" href="/">&#9664; Trở lại</a>
@@ -17,6 +18,29 @@
     </div>
 </nav>
 
+{% if request.args.get('err_msg') %}
+    <div id="errorAlert"
+     class="alert alert-danger alert-dismissible fade show"
+     role="alert">
+        {{ request.args.get('err_msg') }}
+        <button type="button"
+                class="btn-close"
+                aria-label="Close"
+                onclick="closeAlert1()"></button>
+    </div>
+{% endif %}
+
+{% if request.args.get('msg') %}
+    <div id="successAlert"
+     class="alert alert-success alert-dismissible fade show"
+     role="alert">
+        {{ request.args.get('msg') }}
+        <button type="button"
+                class="btn-close"
+                aria-label="Close"
+                onclick="closeAlert2()"></button>
+    </div>
+{% endif %}
 
 <div class="container mt-4">
 
@@ -51,6 +75,34 @@
     {% endif %}
 
 </div>
+
+<script>
+function closeAlert1() {
+    const alert = document.getElementById('errorAlert');
+    if (alert) {
+        alert.classList.remove('show');
+        alert.classList.add('d-none');
+    }
+
+    // XÓA msg khỏi URL mà không reload
+    const url = new URL(window.location);
+    url.searchParams.delete('err_msg');
+    window.history.replaceState({}, document.title, url.pathname);
+}
+
+function closeAlert2() {
+    const alert = document.getElementById('successAlert');
+    if (alert) {
+        alert.classList.remove('show');
+        alert.classList.add('d-none');
+    }
+
+    // XÓA msg khỏi URL mà không reload
+    const url = new URL(window.location);
+    url.searchParams.delete('msg');
+    window.history.replaceState({}, document.title, url.pathname);
+}
+</script>
 
 </body>
 </html>

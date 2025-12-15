@@ -17,6 +17,30 @@
     </div>
 </nav>
 
+{% if request.args.get('err_msg') %}
+    <div id="errorAlert"
+     class="alert alert-danger alert-dismissible fade show"
+     role="alert">
+        {{ request.args.get('err_msg') }}
+        <button type="button"
+                class="btn-close"
+                aria-label="Close"
+                onclick="closeAlert1()"></button>
+    </div>
+{% endif %}
+
+{% if request.args.get('msg') %}
+    <div id="successAlert"
+     class="alert alert-success alert-dismissible fade show"
+     role="alert">
+        {{ request.args.get('msg') }}
+        <button type="button"
+                class="btn-close"
+                aria-label="Close"
+                onclick="closeAlert2()"></button>
+    </div>
+{% endif %}
+
 <div class="container mt-4">
 
     <h1 class="text-center">Trang Database</h1>
