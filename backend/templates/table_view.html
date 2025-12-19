@@ -62,9 +62,7 @@
                             <option disabled>Không có cột nào</option>
                         {% else %}
                             {% for col in columns %}
-                                {% if col[0] != 'id' %}
-                                    <option value="{{ col[0] }}">{{ col[0] }}</option>
-                                {% endif %}
+                                <option value="{{ col[0] }}">{{ col[0] }}</option>
                             {% endfor %}
                         {% endif %}
                 </select>
@@ -81,7 +79,6 @@
 
     <form class="row g-2 mb-2" action="/database/{{ dbname }}/{{ table }}/rename_column" method="POST">
         {% for col in columns %}
-            {% if col[0] != 'id' %}
                 <div class="col-auto">
                     <input type="text" class="form-control" value="{{ col[0] }}" disabled>
                 </div>
@@ -94,9 +91,6 @@
                 <div class="col-auto">
                     <button class="btn btn-warning">Đổi tên</button>
                 </div>
-            {% else %}
-            <p>Không có cột nào</p>
-            {% endif %}
         {% endfor %}
     </form>
 

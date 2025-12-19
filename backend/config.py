@@ -1,3 +1,3 @@
-MYSQL_HOST="98.92.43.197"
+MYSQL_HOST="database-1.cemrtuenvgdj.us-east-1.rds.amazonaws.com"
 MYSQL_ADMIN_USER="admin"
-MYSQL_ADMIN_PASS="admin123"
+MYSQL_ADMIN_PASS="Admin123"
