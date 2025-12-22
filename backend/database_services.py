@@ -1,9 +1,8 @@
 import re
-from datetime import datetime
-from flask import render_template, request, redirect, session, url_for, send_file
-from werkzeug.utils import secure_filename
+from flask import render_template, request, redirect, session, url_for
 from db_admin import MySQLAdmin
 import os
+
 
 mysql_admin = MySQLAdmin()
 
@@ -72,29 +71,3 @@ class DatabaseServices:
 
         except Exception as e:
             return f"Lỗi khi xóa database: {e}"
-
-
-    # BACKUP DATABASE - BACKUP FULL
-    @staticmethod
-    def backup_database(bak_file_directory):
-        if 'username' not in session:
-            return redirect('/login')
-        return None
-
-    # RESTORE DATABASE
-    @staticmethod
-    def restore_database():
-        '''
-        Restore database từ file.dump hoặc .sql
-        '''
-        if 'username' not in session:
-            return redirect('/login')
-
-        dbname = request.form.get('dbname')
-        if not dbname:
-            return redirect(url_for('index', err_msg="Thiếu tên database"))
-
-        username = session['username']
-        user_pass = session['user_pass']
-
-        pass

@@ -23,13 +23,6 @@ def create_database():
 def drop_database(dbname):
     return DatabaseServices.drop_database(dbname)
 
-# BACKUP
-
-# RESTORE
-@app.route('/restore', methods=['POST'])
-def restore():
-    return DatabaseServices.restore_database()
-
 
 # --------------------------- AUTHENTICATION SERVICES -----------------------
 
