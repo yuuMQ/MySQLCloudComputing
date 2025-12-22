@@ -3,8 +3,6 @@ from authentication_services import AuthServices
 from database_services import DatabaseServices
 from table_services import TableServices
 from key_services import KeyServices
-from config import *
-import re
 
 app = Flask(__name__)
 app.secret_key = "super-secret-key"
@@ -24,6 +22,13 @@ def create_database():
 @app.route('/drop_database/<dbname>')
 def drop_database(dbname):
     return DatabaseServices.drop_database(dbname)
+
+# BACKUP
+
+# RESTORE
+@app.route('/restore', methods=['POST'])
+def restore():
+    return DatabaseServices.restore_database()
 
 
 # --------------------------- AUTHENTICATION SERVICES -----------------------
@@ -65,10 +70,16 @@ def list_tables(dbname):
 @app.route('/database/<dbname>/<table>')
 def view_table(dbname, table):
     return TableServices.view_table(dbname, table)
+
 # ADD COLUMN
 @app.route('/database/<dbname>/<table>/add_column', methods=['POST'])
 def add_column(dbname, table):
     return TableServices.add_column(dbname, table)
+
+# GET COLUMN
+@app.route("/database/<dbname>/table/<table>/columns")
+def get_table_columns(dbname, table):
+    return TableServices.get_table_columns(dbname, table)
 
 # DROP COLUMN
 @app.route('/database/<dbname>/<table>/drop_column', methods=['POST'])
@@ -107,6 +118,16 @@ def add_primary_key(dbname, table):
 @app.route('/database/<dbname>/<table>/drop_primary_key', methods=['POST'])
 def drop_primary_key(dbname, table):
     return KeyServices.drop_primary_key(dbname, table)
+
+# ADD FOREIGN KEY
+@app.route('/database/<dbname>/<table>/add_foreign_key', methods=['POST'])
+def add_foreign_key(dbname, table):
+    return KeyServices.add_foreign_key(dbname, table)
+
+@app.route('/database/<dbname>/<table>/drop_foreign_key', methods=['POST'])
+def drop_foreign_key(dbname, table):
+    return KeyServices.drop_foreign_key(dbname, table)
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)

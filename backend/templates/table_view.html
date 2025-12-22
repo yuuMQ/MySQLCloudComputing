@@ -18,194 +18,231 @@
 </nav>
 
 {% if request.args.get('err_msg') %}
-    <div id="errorAlert"
-     class="alert alert-danger alert-dismissible fade show"
-     role="alert">
-        {{ request.args.get('err_msg') }}
-        <button type="button"
-                class="btn-close"
-                aria-label="Close"
-                onclick="closeAlert1()"></button>
-    </div>
+<div id="errorAlert" class="alert alert-danger alert-dismissible fade show">
+    {{ request.args.get('err_msg') }}
+    <button type="button" class="btn-close" onclick="closeAlert1()"></button>
+</div>
 {% endif %}
 
 {% if request.args.get('msg') %}
-    <div id="successAlert"
-     class="alert alert-success alert-dismissible fade show"
-     role="alert">
-        {{ request.args.get('msg') }}
-        <button type="button"
-                class="btn-close"
-                aria-label="Close"
-                onclick="closeAlert2()"></button>
-    </div>
+<div id="successAlert" class="alert alert-success alert-dismissible fade show">
+    {{ request.args.get('msg') }}
+    <button type="button" class="btn-close" onclick="closeAlert2()"></button>
+</div>
 {% endif %}
 
 <h1 class="text-center">Trang dữ liệu của bảng {{ table }}</h1>
 
 <div class="container mt-4">
-    <div class="row">
-        <div class="col-md-6 col-xs-12">
-            <form method="POST" action="/database/{{ dbname }}/{{ table }}/add_column" class="row g-2 mb-4">
-                <h4>Thêm cột</h4>
-                <input name="column" class="form-control" placeholder="Tên cột" required>
 
-                <button class="btn btn-primary">Thêm</button>
-            </form>
-        </div>
-        <div class="col-md-6 col-xs-12">
-            <form method="POST" action="/database/{{ dbname }}/{{ table }}/drop_column" class="row g-2 mb-4">
-                <h4>Xóa cột</h4>
-                <select name="column" class="form-select" id="dropColumn">
+<!-- ================= COLUMN ================= -->
 
-                        {% if columns | length < 2 %}
-                            <option disabled>Không có cột nào</option>
-                        {% else %}
-                            {% for col in columns %}
-                                <option value="{{ col[0] }}">{{ col[0] }}</option>
-                            {% endfor %}
-                        {% endif %}
-                </select>
-
-                <button class="btn btn-danger" onclick="return validateDrop()">Xóa</button>
-            </form>
-        </div>
+<div class="row">
+    <div class="col-md-6">
+        <form method="POST" action="/database/{{ dbname }}/{{ table }}/add_column">
+            <h4>Thêm cột</h4>
+            <input name="column" class="form-control mb-2" placeholder="Tên cột" required>
+            <button class="btn btn-primary">Thêm</button>
+        </form>
     </div>
 
-
-    <hr>
-
-    <h4>Đổi tên cột</h4>
-
-    <form class="row g-2 mb-2" action="/database/{{ dbname }}/{{ table }}/rename_column" method="POST">
-        {% for col in columns %}
-                <div class="col-auto">
-                    <input type="text" class="form-control" value="{{ col[0] }}" disabled>
-                </div>
-
-                <input type="hidden" name="old_column" value="{{ col[0] }}">
-
-                <div class="col-auto">
-                    <input type="text" name="new_column" class="form-control" placeholder="Tên mới" required>
-                </div>
-                <div class="col-auto">
-                    <button class="btn btn-warning">Đổi tên</button>
-                </div>
-        {% endfor %}
-    </form>
-
-
-    <hr>
-
-    <h4>Cấp primary key</h4>
-    <form method="POST" action="/database/{{ dbname }}/{{ table }}/add_primary_key">
-        <select name="columns" class="form-select" multiple>
-            {% for col in columns %}
+    <div class="col-md-6">
+        <form method="POST" action="/database/{{ dbname }}/{{ table }}/drop_column">
+            <h4>Xóa cột</h4>
+            <select name="column" class="form-select mb-2" id="dropColumn">
+                {% for col in columns %}
                 <option value="{{ col[0] }}">{{ col[0] }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-danger" onclick="return validateDrop()">Xóa</button>
+        </form>
+    </div>
+</div>
+
+<hr>
+
+<!-- ================= RENAME COLUMN ================= -->
+
+<h4>Đổi tên cột</h4>
+<form class="row g-2 mb-3" action="/database/{{ dbname }}/{{ table }}/rename_column" method="POST">
+    {% for col in columns %}
+    <div class="col-auto">
+        <input class="form-control" value="{{ col[0] }}" disabled>
+        <input type="hidden" name="old_column" value="{{ col[0] }}">
+    </div>
+    <div class="col-auto">
+        <input name="new_column" class="form-control" placeholder="Tên mới" required>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-warning">Đổi tên</button>
+    </div>
+    {% endfor %}
+</form>
+
+<hr>
+
+<!-- ================= PRIMARY KEY ================= -->
+
+<h4>Cấp PRIMARY KEY</h4>
+<form method="POST" action="/database/{{ dbname }}/{{ table }}/add_primary_key">
+    <select name="columns" class="form-select" multiple>
+        {% for col in columns %}
+        <option value="{{ col[0] }}">{{ col[0] }}</option>
+        {% endfor %}
+    </select>
+    <button class="btn btn-primary w-100 mt-2">Cấp PRIMARY KEY</button>
+</form>
+
+<form method="POST" action="/database/{{ dbname }}/{{ table }}/drop_primary_key">
+    <button class="btn btn-danger w-100 mt-2">Xóa PRIMARY KEY</button>
+</form>
+
+<hr>
+
+<!-- ================= FOREIGN KEY ================= -->
+
+<h4>Liên kết bảng (FOREIGN KEY)</h4>
+
+<form method="POST" action="/database/{{ dbname }}/{{ table }}/add_foreign_key" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <label>Cột hiện tại</label>
+        <select name="fk_column" class="form-select" required>
+            {% for col in columns %}
+            <option value="{{ col[0] }}">{{ col[0] }}</option>
             {% endfor %}
         </select>
+    </div>
 
-        <button class="btn btn-primary w-100 mt-2">
-            Cấp PRIMARY KEY
-        </button>
-    </form>
-
-    <form method="POST" action="/database/{{ dbname }}/{{ table }}/drop_primary_key">
-        <button class="btn btn-danger w-100 mt-2">
-            Xóa PRIMARY KEY
-        </button>
-    </form>
-
-    <hr>
-
-    <form method="POST" action="/database/{{ dbname }}/{{ table }}/add_row" class="row g-2 mb-4">
-        <h4>Nhập liệu cho cột và thêm dòng mới</h4>
-        {% if columns | length > 0 %}
-            {% for col in columns %}
-                {% if col[0] == 'id' %}
-                <div class="col-3">
-                    <label>{{ col[0] }}</label>
-                    <input class="form-control" name="{{ col[0] }}" required>
-                </div>
-                {% else %}
-                <div class="col-3">
-                    <label>{{ col[0] }}</label>
-                    <input class="form-control" name="{{ col[0] }}">
-                </div>
+    <div class="col-md-3">
+        <label>Bảng tham chiếu</label>
+        <select name="ref_table" class="form-select" id="refTableSelect" required>
+            <option value="">-- Chọn bảng --</option>
+            {% for t in tables %}
+                {% if t != table %}
+                <option value="{{ t }}">{{ t }}</option>
                 {% endif %}
             {% endfor %}
-            <div class="col-12 mt-2 mb-3">
-                <button class="btn btn-success">Thêm dòng</button>
-            </div>
-        {% else %}
-        <p>Không có cột nào</p>
-        {% endif %}
-    </form>
+        </select>
+    </div>
 
-    <hr>
+    <div class="col-md-3">
+        <label>Cột tham chiếu</label>
+        <select name="ref_column" class="form-select" id="refColumnSelect" required disabled>
+            <option value="">-- Chọn bảng trước --</option>
+        </select>
+    </div>
 
-    <h4>Dữ liệu trong bảng</h4>
+    <div class="col-12">
+        <button class="btn btn-primary w-100" id="fkSubmitBtn" disabled>Tạo FOREIGN KEY</button>
+    </div>
+</form>
 
-    <table class="table table-bordered table-hover">
-        <thead>
-            <tr>
-                {% for col in columns %}
-                    <th>{{ col[0] }}</th>
-                {% endfor %}
-                <th>Hành động</th>
-            </tr>
-        </thead>
 
-        <tbody>
-            {% for row in rows %}
-                <tr>
-                    {% for value in row %}
-                        <td>{{ value }}</td>
-                    {% endfor %}
+{% if foreign_keys|length > 0 %}
+<table class="table table-bordered">
+    <thead class="table-secondary">
+        <tr>
+            <th>Tên FK</th>
+            <th>Cột</th>
+            <th>Bảng tham chiếu</th>
+            <th>Cột tham chiếu</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fk in foreign_keys %}
+        <tr>
+            <td>{{ fk[0] }}</td>
+            <td>{{ fk[1] }}</td>
+            <td>{{ fk[2] }}</td>
+            <td>{{ fk[3] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
-                    <td>
-                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                                data-bs-target="#editModal{{ row[0] }}">Sửa</button>
+<form method="POST" action="/database/{{ dbname }}/{{ table }}/drop_foreign_key">
+    <select name="fk_name" class="form-select">
+        {% for fk in foreign_keys %}
+        <option value="{{ fk[0] }}">{{ fk[0] }}</option>
+        {% endfor %}
+    </select>
+    <button class="btn btn-danger w-100 mt-2">Xóa FOREIGN KEY</button>
+</form>
+{% else %}
+<p class="text-muted">Bảng chưa có FOREIGN KEY</p>
+{% endif %}
 
-                        <a class="btn btn-sm btn-danger"
-                           href="/database/{{ dbname }}/{{ table }}/delete_row/{{ row[0] }}"
-                           onclick="return confirm('Xóa dòng này?')">Xóa</a>
-                    </td>
-                </tr>
+<hr>
+
+<!-- ================= ADD ROW ================= -->
+
+<h4>Nhập liệu & thêm dòng</h4>
+<form method="POST" action="/database/{{ dbname }}/{{ table }}/add_row" class="row g-2 mb-3">
+    {% for col in columns %}
+    <div class="col-3">
+        <label>{{ col[0] }}</label>
+        <input class="form-control" name="{{ col[0] }}">
+    </div>
+    {% endfor %}
+    <div class="col-12 mt-2">
+        <button class="btn btn-success">Thêm dòng</button>
+    </div>
+</form>
+
+<hr>
+
+<!-- ================= DATA ================= -->
+
+<h4>Dữ liệu trong bảng</h4>
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            {% for col in columns %}
+            <th>{{ col[0] }}</th>
             {% endfor %}
-        </tbody>
-    </table>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            {% for value in row %}
+            <td>{{ value }}</td>
+            {% endfor %}
+            <td>
+                <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                        data-bs-target="#editModal{{ row[0] }}">Sửa</button>
+                <a class="btn btn-sm btn-danger"
+                   href="/database/{{ dbname }}/{{ table }}/delete_row/{{ row[0] }}"
+                   onclick="return confirm('Xóa dòng này?')">Xóa</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 </div>
 
-<!-- ======================================= -->
-<!--  MODALS — moved OUTSIDE the table FIXED -->
-<!-- ======================================= -->
+<!-- ================= MODALS ================= -->
 
 {% for row in rows %}
 <div class="modal fade" id="editModal{{ row[0] }}" tabindex="-1">
     <div class="modal-dialog">
-        <form method="POST" action="/database/{{ dbname }}/{{ table }}/edit_row/{{ row[0] }}"
-              class="modal-content">
-
+        <form method="POST" action="/database/{{ dbname }}/{{ table }}/edit_row/{{ row[0] }}" class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Sửa dòng ID {{ row[0] }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-
             <div class="modal-body">
                 {% for col in columns %}
-                    <label>{{ col[0] }}</label>
-                    <input name="{{ col[0] }}" class="form-control mb-2"
-                           value="{{ row[loop.index0] }}">
+                <label>{{ col[0] }}</label>
+                <input name="{{ col[0] }}" class="form-control mb-2" value="{{ row[loop.index0] }}">
                 {% endfor %}
             </div>
-
             <div class="modal-footer">
                 <button class="btn btn-success">Lưu</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
             </div>
-
         </form>
     </div>
 </div>
@@ -213,42 +250,86 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// Lấy dbname và current table từ template và lưu vào biến global
+const currentDbname = "{{ dbname }}";
+const currentTable = "{{ table }}";
+
 function validateDrop() {
-    const select = document.getElementById("dropColumn");
-
-    if (!select.value) {
-        alert("Vui lòng chọn cột cần xóa!");
-        return false; // chặn submit form
-    }
-
     return confirm("Bạn có chắc chắn muốn xóa cột này?");
 }
 
 function closeAlert1() {
-    const alert = document.getElementById('errorAlert');
-    if (alert) {
-        alert.classList.remove('show');
-        alert.classList.add('d-none');
-    }
-
-    // XÓA msg khỏi URL mà không reload
-    const url = new URL(window.location);
-    url.searchParams.delete('err_msg');
-    window.history.replaceState({}, document.title, url.pathname);
+    document.getElementById('errorAlert')?.classList.add('d-none');
 }
 
 function closeAlert2() {
-    const alert = document.getElementById('successAlert');
-    if (alert) {
-        alert.classList.remove('show');
-        alert.classList.add('d-none');
+    document.getElementById('successAlert')?.classList.add('d-none');
+}
+
+// Xử lý FOREIGN KEY
+const refTableSelect = document.getElementById('refTableSelect');
+const refColumnSelect = document.getElementById('refColumnSelect');
+const fkSubmitBtn = document.getElementById('fkSubmitBtn');
+
+refTableSelect.addEventListener('change', async function () {
+    const selectedTable = this.value;
+
+    if (!selectedTable) {
+        refColumnSelect.innerHTML = '<option value="">-- Chọn bảng trước --</option>';
+        refColumnSelect.disabled = true;
+        fkSubmitBtn.disabled = true;
+        return;
     }
 
-    // XÓA msg khỏi URL mà không reload
-    const url = new URL(window.location);
-    url.searchParams.delete('msg');
-    window.history.replaceState({}, document.title, url.pathname);
-}
+    refColumnSelect.innerHTML = '<option>Đang tải cột...</option>';
+    refColumnSelect.disabled = false;
+
+    try {
+        // Gọi API để lấy danh sách cột của bảng được chọn
+        const response = await fetch(`/database/${currentDbname}/table/${selectedTable}/columns`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        console.log('API Response:', data); // Debug
+
+        refColumnSelect.innerHTML = '<option value="">-- Chọn cột --</option>';
+
+        if (data.columns && data.columns.length > 0) {
+            data.columns.forEach(col => {
+                const option = document.createElement('option');
+                option.value = col;
+                option.textContent = col;
+                refColumnSelect.appendChild(option);
+            });
+            fkSubmitBtn.disabled = false;
+        } else {
+            refColumnSelect.innerHTML = '<option value="">Không có cột nào</option>';
+            fkSubmitBtn.disabled = true;
+        }
+
+    } catch (error) {
+        console.error('Lỗi khi tải cột:', error);
+        refColumnSelect.innerHTML = `<option value="">Lỗi: ${error.message}</option>`;
+        fkSubmitBtn.disabled = true;
+    }
+});
+
+// Debug thông tin
+console.log('Database:', currentDbname);
+console.log('Current Table:', currentTable);
+console.log('Ref Table Select:', refTableSelect);
+console.log('Ref Column Select:', refColumnSelect);
+
+// Tự động load cột nếu đã có bảng được chọn từ trước
+document.addEventListener('DOMContentLoaded', function() {
+    if (refTableSelect.value) {
+        refTableSelect.dispatchEvent(new Event('change'));
+    }
+});
 </script>
 </body>
 </html>

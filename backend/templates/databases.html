@@ -73,6 +73,24 @@
     {% else %}
         <p class="text-muted mt-3">Không có database nào.</p>
     {% endif %}
+
+    <hr>
+
+    <h3>Restore Database</h3>
+    <form method="POST" action="/restore" enctype="multipart/form-data" class="mt-3 row g-3">
+        <div class="col-md-4">
+            <input name="dbname" class="form-control" placeholder="Tên database cần restore" required>
+        </div>
+        <div class="col-md-4">
+            <input type="file" name="file" class="form-control" accept=".bak,.sql" required>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-warning w-100"
+                    onclick="return confirm('Restore sẽ ghi đè dữ liệu nếu database đã tồn tại. Tiếp tục?')">
+                Restore Database
+            </button>
+        </div>
+    </form>
 </div>
 
 </body>

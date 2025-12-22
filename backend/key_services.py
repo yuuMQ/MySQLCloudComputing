@@ -4,6 +4,7 @@ from db_admin import MySQLAdmin
 mysql_admin = MySQLAdmin()
 
 class KeyServices:
+    # --------------------------- PRIMARY KEY ---------------------------------
     # ADD PRIMARY KEY
     @staticmethod
     def add_primary_key(dbname, table):
@@ -29,7 +30,7 @@ class KeyServices:
 
         # 2. MODIFY columns -> not null
         for col in columns:
-            cursor.execute(f"ALTER TABLE {dbname}.{table} MODIFY `{col}` NVARCHAR(255) NOT NULL")
+            cursor.execute(f"ALTER TABLE {dbname}.{table} MODIFY `{col}` VARCHAR(255) NOT NULL")
 
         try:
             # 3. ADD COMPOSITE PK
@@ -39,7 +40,7 @@ class KeyServices:
             conn.close()
         except Exception as e:
             conn.rollback()
-            return redirect(url_for('view_table', dbname=dbname, table=table, msg=str(e)))
+            return redirect(url_for('view_table', dbname=dbname, table=table, err_msg=str(e)))
 
         return redirect(f"/database/{dbname}/{table}?msg=Thêm PRIMARY KEY thành công!!!!")
 
@@ -68,6 +69,83 @@ class KeyServices:
         except Exception as e:
             conn.rollback()
             conn.close()
-            return redirect(url_for('view_table', dbname=dbname, table=table, msg=str(e)))
+            return redirect(url_for('view_table', dbname=dbname, table=table, err_msg=str(e)))
         conn.close()
         return redirect(f"/database/{dbname}/{table}?msg=XÓA PRIMARY KEY THÀNH CÔNG")
+
+    @staticmethod
+    def get_primary_key(cursor, dbname, table):
+        cursor.execute('''
+            SELECT COLUMN_NAME
+            FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = %s
+                AND TABLE_NAME = %s
+                AND CONSTRAINT_NAME = 'PRIMARY'
+        ''', (dbname, table))
+        row =  cursor.fetchone()
+        if not row:
+            return None
+        return row[0]
+    # ------------------------------FOREIGN KEY---------------------------------------
+    # ADD FOREIGN KEY
+    @staticmethod
+    def add_foreign_key(dbname, table):
+        '''
+            - fk_columns: Chọn cột để tạo fk
+            - ref_table: Chọn bảng để connect
+            - ref_column: Chọn cột bên bảng được connect để link lại với nhau
+            - On update cascade: bảng cha thay đổi -> fk thay đổi
+            - On delete restrict: không cho phép xoá dữ liệu bảng cha nếu còn đang tham chiếu fk
+        '''
+        fk_column = request.form.get("fk_column")
+        ref_table = request.form.get("ref_table")
+        ref_column = request.form.get("ref_column")
+
+        if not all([fk_column, ref_table, ref_column]):
+            return redirect(f"/database/{dbname}/{table}?err_msg=THIẾU THÔNG TIN FOREIGN KEY")
+
+        conn = mysql_admin.user_conn(session['username'], session['user_pass'])
+        cursor = conn.cursor()
+
+        fk_name = f'fk_{table}_{fk_column}'
+        try:
+            cursor.execute(f'''
+                ALTER TABLE `{dbname}`.`{table}`
+                ADD CONSTRAINT `{fk_name}`
+                FOREIGN KEY (`{fk_column}`)
+                REFERENCES `{dbname}`.`{ref_table}`(`{ref_column}`)
+                ON UPDATE CASCADE
+                ON DELETE RESTRICT
+            ''')
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            return redirect(url_for('view_table', dbname=dbname, table=table, err_msg=str(e)))
+
+        conn.close()
+        return redirect(f"/database/{dbname}/{table}?msg=Thêm FOREIGN KEY thành công")
+
+    @staticmethod
+    def drop_foreign_key(dbname, table):
+        fk_name = request.form.get("fk_name")
+
+        if not fk_name:
+            return redirect(f"/database/{dbname}/{table}?err_msg=CHƯA CHỌN FOREIGN KEY")
+
+        conn = mysql_admin.user_conn(session['username'], session['user_pass'])
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(f'ALTER TABLE `{dbname}`.`{table}` DROP FOREIGN KEY `{fk_name}`')
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            return redirect(url_for('view_table', dbname=dbname, table=table, err_msg=str(e)))
+
+        conn.close()
+        return redirect(f"/database/{dbname}/{table}?msg=Thêm FOREIGN KEY thành công")
+
+
+
