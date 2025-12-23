@@ -121,6 +121,9 @@ def add_foreign_key(dbname, table):
 def drop_foreign_key(dbname, table):
     return KeyServices.drop_foreign_key(dbname, table)
 
+@app.route("/health")
+def health():
+    return "ok", 200
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
