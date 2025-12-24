@@ -63,23 +63,32 @@
 
 <!-- ================= RENAME COLUMN ================= -->
 
+
 <h4>Đổi tên cột</h4>
-<form class="row g-2 mb-3" action="/database/{{ dbname }}/{{ table }}/rename_column" method="POST">
-    {% for col in columns %}
-    <div class="col-auto">
-        <input class="form-control" value="{{ col[0] }}" disabled>
-        <input type="hidden" name="old_column" value="{{ col[0] }}">
+<form class="row g-3 mb-3" action="/database/{{ dbname }}/{{ table }}/rename_column" method="POST">
+
+    <div class="col-md-4">
+        <label class="form-label">Chọn cột cần đổi</label>
+        <select name="old_column" class="form-select" required>
+            {% for col in columns %}
+            <option value="{{ col[0] }}">{{ col[0] }}</option>
+            {% endfor %}
+        </select>
     </div>
-    <div class="col-auto">
-        <input name="new_column" class="form-control" placeholder="Tên mới" required>
+
+    <div class="col-md-4">
+        <label class="form-label">Tên cột mới</label>
+        <input name="new_column" class="form-control" placeholder="Nhập tên mới" required>
     </div>
-    <div class="col-auto">
-        <button class="btn btn-warning">Đổi tên</button>
+
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-warning w-100">Đổi tên</button>
     </div>
-    {% endfor %}
+
 </form>
 
 <hr>
+
 
 <!-- ================= PRIMARY KEY ================= -->
 
@@ -230,7 +239,7 @@
     <div class="modal-dialog">
         <form method="POST" action="/database/{{ dbname }}/{{ table }}/edit_row/{{ row[0] }}" class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Sửa dòng ID {{ row[0] }}</h5>
+                <h5 class="modal-title">Sửa dòng {{ row[0] }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">

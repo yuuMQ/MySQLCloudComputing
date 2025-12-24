@@ -2,6 +2,7 @@ from flask import jsonify, render_template, request, redirect, session, url_for
 from db_admin import MySQLAdmin
 import re
 from key_services import KeyServices
+from mysql.connector import IntegrityError
 mysql_admin = MySQLAdmin()
 
 class TableServices:
@@ -304,11 +305,15 @@ class TableServices:
         values.append(rowid)
 
         sql = f"UPDATE `{dbname}`.`{table}` SET {','.join(assignments)} WHERE `{pk}`=%s"
-        cursor.execute(sql, values)
-        conn.commit()
-        conn.close()
-
-        return redirect(f'/database/{dbname}/{table}')
+        try:
+            cursor.execute(sql, values)
+            conn.commit()
+            conn.close()
+            return redirect(f"/database/{dbname}/{table}?msg=Cập nhật thành công")
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            return redirect(f'/database/{dbname}/{table}?err_msg={str(e)}')
 
     # Delete Row
     @staticmethod
