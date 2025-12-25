@@ -2,7 +2,6 @@ from flask import jsonify, render_template, request, redirect, session, url_for
 from db_admin import MySQLAdmin
 import re
 from key_services import KeyServices
-from mysql.connector import IntegrityError
 mysql_admin = MySQLAdmin()
 
 class TableServices:
@@ -322,6 +321,33 @@ class TableServices:
         cursor = conn.cursor()
 
         pk = KeyServices.get_primary_key(cursor, dbname, table)
+
+        # CHECK users Table to delete permanently user
+        if dbname == 'user_db' and table == 'users':
+            dict_cursor = conn.cursor(dictionary=True)
+            dict_cursor.execute(f"SELECT username, password FROM `{dbname}`.`{table}` WHERE `{pk}`=%s", (rowid,))
+
+
+            user = dict_cursor.fetchone()
+            if not user:
+                conn.close()
+                return redirect(f"/database/{dbname}/{table}?err_msg=User không tồn tại")
+
+            username = user['username']
+            password = user['password']
+
+            mysql_admin.delete_mysql_user(username, password)
+
+            dict_cursor.execute(
+                f"DELETE FROM `{dbname}`.`{table}` WHERE `{pk}`=%s",
+                (rowid,)
+            )
+            conn.commit()
+            conn.close()
+
+            return redirect(
+                f"/database/{dbname}/{table}?msg=Đã xoá user và toàn bộ dữ liệu liên quan"
+            )
 
         cursor.execute(f'DELETE FROM `{dbname}`.`{table}` WHERE `{pk}`=%s', (rowid,))
         conn.commit()

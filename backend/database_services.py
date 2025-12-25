@@ -1,13 +1,8 @@
 import re
 from flask import render_template, request, redirect, session, url_for
 from db_admin import MySQLAdmin
-import os
-
 
 mysql_admin = MySQLAdmin()
-
-DEFAULT_BACKUP_DIR = 'backups'
-os.makedirs(DEFAULT_BACKUP_DIR, exist_ok=True)
 
 class DatabaseServices:
     # SHOW DATABASES
